@@ -21,7 +21,7 @@ app.use(express.json())
 
 app.listen(port, () => console.log(`Server running at http://localhost:${port}`))
 
-app.get('/', async (req, res) => {
+app.post('/', async (req, res) => {
   const { type, file, format } = req.body
   if (type === "translate" ) {
     await openai.createTranslation(
