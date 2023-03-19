@@ -9,34 +9,48 @@ dotenv.config()
 const configuration = new Configuration({
   apiKey: process.env.OPENAI_API_KEY,
 })
-
 const openai = new OpenAIApi(configuration);
 
-const transcribe = await openai.createTranscription(
-  fs.createReadStream("news.mp3"), // file
-  "whisper-1", // model
-  "Please transcribe: ", // prompt
-  "text", //response_format
-  "0", // temperature
-  "en" // language (ISO-639-1 format)
-)
-
-const translate = await openai.createTranslation(
-  fs.createReadStream("japanese.mp3"), // file
-  "whisper-1", // model
-  "Please transcribe: ", // prompt
-  "text", //response_format
-  "0" // temperature
-)
-
 const app = express()
+const port = 8080
 
 app.use(cors())
 
 app.use(express.json())
 
-app.get('/', (req, res) => res.send({info: transcribe.data}))
 
-const port = 8080
+app.listen(port, () => console.log(`Server running at http://localhost:${port}`))
 
-app.listen(port, () => console.log(`Server running on port ${port}`))
+app.get('/', async (req, res) => {
+  const { type, file, format } = req.body
+  if (type === "translate" ) {
+    await openai.createTranslation(
+      fs.createReadStream(file),
+      "whisper-1", // model
+      "", // prompt
+      format,
+      "0", // temperature
+    )
+    .then((response) => {
+      res.send(response.data)
+    })
+    .catch((error) => {
+      res.send(error)
+    })
+  } else {
+    await openai.createTranscription(
+      fs.createReadStream(file),
+      "whisper-1", // model
+      "", // prompt
+      format,
+      "0", // temperature
+      "en" // language (ISO-639-1 format)
+    )
+      .then((response) => {
+        res.send(response.data)
+      })
+      .catch((error) => {
+        res.send(error)
+      })
+  }
+})
