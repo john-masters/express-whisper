@@ -24,14 +24,16 @@ app.listen(port, () =>
 
 app.post("/", async (req, res) => {
   const { file } = req.body
+  const buf = Buffer.from(file, "binary").toString("base64")
+  console.log(buf)
 
   // console.log(Buffer.from(file, "binary").toString("base64")) 
-  console.log("req.body", req.body)
+  // console.log("req.body", req.body)
   res.send()
   try {
     const res = await openai.createTranscription(
-      fs.createReadStream(file),
-      // Buffer.from(file, "binary").toString("base64"),
+      // fs.createReadStream(file),
+      Buffer.from(file, "binary").toString("base64"),
       "whisper-1",
       "",
       "json",
@@ -41,7 +43,8 @@ app.post("/", async (req, res) => {
     res.send(res)
   }
   catch (error) {
-    res.send(error)
+    console.log(error)
+    // res.send(error)
   }
 
 })
