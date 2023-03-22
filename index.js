@@ -3,6 +3,7 @@ import cors from "cors"
 import { Configuration, OpenAIApi } from "openai"
 import fs from "fs"
 import dotenv from "dotenv"
+import formidable from "formidable"
 
 dotenv.config()
 
@@ -23,28 +24,34 @@ app.listen(port, () =>
 );
 
 app.post("/", async (req, res) => {
-  const { file } = req.body
-  const buf = Buffer.from(file, "binary").toString("base64")
-  console.log(buf)
+  const form = formidable({
+    multiples: false
+  })
 
-  // console.log(Buffer.from(file, "binary").toString("base64")) 
-  // console.log("req.body", req.body)
-  res.send()
-  try {
-    const res = await openai.createTranscription(
-      // fs.createReadStream(file),
-      Buffer.from(file, "binary").toString("base64"),
-      "whisper-1",
-      "",
-      "json",
-      "0",
-      "en"
-    )
-    res.send(res)
-  }
-  catch (error) {
-    console.log(error)
-    // res.send(error)
-  }
+  form.parse(req, async (err, fields, files) => {
+    if (err) {
+      console.log(err);
+      res.status(500).send(err);
+      return;
+    }
+    console.log(files);
+    const fileStream = fs.createReadStream(files.file.path);
+    try {
+      const result = await openai.createTranscription(
+        fileStream,
+        "whisper-1",
+        "",
+        "json",
+        "0",
+        "en"
+      )
+      console.log(result)
+      res.send(result)
+    }
+    catch (error) {
+      console.log(error)
+    }
+
+  })
 
 })
