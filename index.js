@@ -12,7 +12,7 @@ const storage = multer.diskStorage({
     cb(null, file.originalname)
   },
   destination: function (req, file, cb) {
-    cb(null, './')
+    cb(null, './files')
   },
 })
 const upload = multer({ storage })
@@ -53,11 +53,19 @@ app.post("/", upload.single('file'), async (req, res) => {
       "0",
       "en"
     )
-    console.log(result)
-    res.send(result)
+    console.log("result: ", result.data.text)
+    res.status(200).send({ text: result.data.text })
+
+    fs.unlink(filePath, (err) => {
+      if (err) {
+        console.error(err)
+        return
+      }
+      console.log(`${filePath} was deleted`)
+    })
   }
   catch (error) {
-    console.log(error)
+    console.log("error: ", error)
   }
 
 })
