@@ -4,6 +4,8 @@ import { Configuration, OpenAIApi } from "openai"
 import fs from "fs"
 import dotenv from "dotenv"
 import multer from "multer"
+import path from "path"
+import stripe from "stripe"
 
 dotenv.config()
 
@@ -12,7 +14,7 @@ const storage = multer.diskStorage({
     cb(null, file.originalname)
   },
   destination: function (req, file, cb) {
-    cb(null, './files')
+    cb(null, './')
   },
 })
 const upload = multer({ storage })
@@ -35,7 +37,7 @@ app.listen(port, () =>
 );
 
 app.post("/", upload.single('file'), async (req, res) => {
-
+  const format = req.body.format
   const filePath = req.file.path
   
   if (!filePath) {
@@ -49,13 +51,32 @@ app.post("/", upload.single('file'), async (req, res) => {
       fileStream,
       "whisper-1",
       "",
-      "json",
+      format,
       "0",
       "en"
     )
-    console.log("result: ", result.data.text)
-    res.status(200).send({ text: result.data.text })
 
+    const extension = () => {
+      switch (format) {
+        case "text":
+          return ".txt"
+        case "srt":
+          return ".srt"
+        case "vtt":
+          return ".vtt"
+      }
+    }
+
+    const fileName = path.basename(filePath, path.extname(filePath)) + extension()
+
+    res.set({
+      "Content-Type": "Application/octet-stream",
+      "Content-Disposition": `attachment; filename=${fileName}`
+    })
+    res.send(Buffer.from(result.data))
+  } catch (error) {
+    console.log("error: ", error)
+  } finally {
     fs.unlink(filePath, (err) => {
       if (err) {
         console.error(err)
@@ -63,9 +84,6 @@ app.post("/", upload.single('file'), async (req, res) => {
       }
       console.log(`${filePath} was deleted`)
     })
-  }
-  catch (error) {
-    console.log("error: ", error)
   }
 
 })
