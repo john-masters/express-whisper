@@ -6,6 +6,8 @@ import dotenv from "dotenv"
 import multer from "multer"
 import path from "path"
 import stripe from "stripe"
+import ffprobe from "ffprobe"
+import ffprobeStatic from "ffprobe-static"
 
 dotenv.config()
 
@@ -34,13 +36,9 @@ app.use(express.json({ limit: "25mb" }))
 
 app.listen(port, () =>
   console.log(`Server running at http://localhost:${port}`)
-);
+)
 
-app.get("/", (req, res) => {
-  res.send("Hello World!")
-})
-
-app.post("/", upload.single('file'), async (req, res) => {
+app.post("/transcribe", upload.single('file'), async (req, res) => {
   const format = req.body.format
   const filePath = req.file.path
   
@@ -90,4 +88,34 @@ app.post("/", upload.single('file'), async (req, res) => {
     })
   }
 
+})
+
+
+app.post("/price", upload.single('file'), async (req, res) => {
+  const filePath = req.file.path
+  
+  if (!filePath) {
+    res.status(400).send({ message: "No file uploaded" })
+    return
+  }
+
+  try {
+    const metadata = await ffprobe(filePath, { path: ffprobeStatic.path });
+    const audioStream = metadata.streams.find((stream) => stream.codec_type === "audio");
+    if (audioStream) {
+      const duration = audioStream.duration;
+      res.send({ duration })
+    }
+
+  } catch (error) {
+    console.error(`Error getting audio duration: ${error}`);
+  } finally {
+    fs.unlink(filePath, (err) => {
+      if (err) {
+        console.error(err)
+        return
+      }
+      console.log(`${filePath} was deleted`)
+    })
+  }
 })
