@@ -92,7 +92,6 @@ app.post("/transcribe", upload.single('file'), async (req, res) => {
 
 })
 
-
 app.post("/price", upload.single('file'), async (req, res) => {
   const filePath = req.file.path
   
@@ -104,9 +103,13 @@ app.post("/price", upload.single('file'), async (req, res) => {
   try {
     const metadata = await ffprobe(filePath, { path: ffprobeStatic.path });
     const audioStream = metadata.streams.find((stream) => stream.codec_type === "audio");
+
     if (audioStream) {
       const duration = audioStream.duration;
-      res.send({ duration })
+      const pricePerSec = await stripe.prices.retrieve('price_1MrtVDJD5XPjP7WOs2qhF7wf')
+      const price = Math.round(duration) * pricePerSec.unit_amount
+
+      res.send({ price })
     }
 
   } catch (error) {
@@ -136,13 +139,13 @@ app.post("/create-payment-intent", upload.single('file'), async (req, res) => {
   try {
     const metadata = await ffprobe(filePath, { path: ffprobeStatic.path });
     const audioStream = metadata.streams.find((stream) => stream.codec_type === "audio");
-    const costPerSec = 1
+    const pricePerSec = await stripe.prices.retrieve('price_1MrtVDJD5XPjP7WOs2qhF7wf')
 
     if (audioStream) {
       const duration = audioStream.duration;
   
       const paymentIntent = await stripe.paymentIntents.create({
-        amount: Math.round(duration * costPerSec), // price in cents
+        amount: Math.round(duration * pricePerSec), // price in cents
         currency: "aud",
         automatic_payment_methods: {
           enabled: true,
