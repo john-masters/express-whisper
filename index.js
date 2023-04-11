@@ -126,8 +126,6 @@ app.post("/price", upload.single('file'), async (req, res) => {
 })
 
 app.post("/create-payment-intent", upload.single('file'), async (req, res) => {
-  console.log(req.body)
-  console.log(req.file)
   const { items } = req.body;
   const filePath = req.file.path
   
@@ -142,10 +140,13 @@ app.post("/create-payment-intent", upload.single('file'), async (req, res) => {
     const pricePerSec = await stripe.prices.retrieve('price_1MrtVDJD5XPjP7WOs2qhF7wf')
 
     if (audioStream) {
-      const duration = audioStream.duration;
+      const duration = audioStream.duration / 60
+      const centsPerMin = await stripe.prices.retrieve('price_1MrtVDJD5XPjP7WOs2qhF7wf')
+      const pricePerMin = centsPerMin.unit_amount / 100
+      const price = (duration * pricePerMin).toFixed(2)
   
       const paymentIntent = await stripe.paymentIntents.create({
-        amount: Math.round(duration) * pricePerSec, // price in cents
+        amount: price,
         currency: "aud",
         automatic_payment_methods: {
           enabled: true,
