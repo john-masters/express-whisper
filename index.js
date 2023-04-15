@@ -92,39 +92,6 @@ app.post("/transcribe", upload.single('file'), async (req, res) => {
 
 })
 
-app.post("/price", upload.single('file'), async (req, res) => {
-  const filePath = req.file.path
-  
-  if (!filePath) {
-    res.status(400).send({ message: "No file uploaded" })
-    return
-  }
-
-  try {
-    const metadata = await ffprobe(filePath, { path: ffprobeStatic.path });
-    const audioStream = metadata.streams.find((stream) => stream.codec_type === "audio");
-
-    if (audioStream) {
-      const duration = audioStream.duration / 60
-      const centsPerMin = await stripe.prices.retrieve('price_1MrtVDJD5XPjP7WOs2qhF7wf')
-      const pricePerMin = centsPerMin.unit_amount / 100
-      const price = '$' + (duration * pricePerMin).toFixed(2)
-      res.send({ price })
-    }
-
-  } catch (error) {
-    console.error(`Error getting audio duration: ${error}`);
-  } finally {
-    fs.unlink(filePath, (err) => {
-      if (err) {
-        console.error(err)
-        return
-      }
-      console.log(`${filePath} was deleted`)
-    })
-  }
-})
-
 app.post("/create-payment-intent", upload.single('file'), async (req, res) => {
   const { items } = req.body;
   const filePath = req.file.path
@@ -148,16 +115,12 @@ app.post("/create-payment-intent", upload.single('file'), async (req, res) => {
       const paymentIntent = await stripe.paymentIntents.create({
         amount: price,
         currency: "aud",
-        automatic_payment_methods: {
-          enabled: true,
-        },
-      });
+      })
   
       // Create a PaymentIntent with the order amount and currency
       res.send({
-        clientSecret: paymentIntent.client_secret,
-        amount: paymentIntent.amount,
-      });
+        clientSecret: paymentIntent.client_secret
+      })
     }
 
   } catch (error) {
