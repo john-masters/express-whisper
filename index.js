@@ -51,6 +51,7 @@ app.post("/transcribe", upload.single('file'), async (req, res) => {
 
   const fileStream = fs.createReadStream(filePath);
   try {
+    console.log("Transcription started")
     const result = await openai.createTranscription(
       fileStream,
       "whisper-1",
@@ -59,6 +60,7 @@ app.post("/transcribe", upload.single('file'), async (req, res) => {
       "0",
       "en"
     )
+    console.log("Transcription finished")
 
     const extension = () => {
       switch (format) {
