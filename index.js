@@ -5,7 +5,9 @@ import fs from "fs"
 import dotenv from "dotenv"
 import multer from "multer"
 import path from "path"
-import stripe from "stripe"
+import Stripe from "stripe"
+import ffprobe from "ffprobe"
+import ffprobeStatic from "ffprobe-static"
 
 dotenv.config()
 
@@ -29,18 +31,16 @@ const openai = new OpenAIApi(configuration)
 const app = express()
 const port = process.env.PORT || 8080
 
+const stripe = Stripe('sk_test_51MpVLcJD5XPjP7WOKoNE08db9hWPDfPvGhwiZqzq9RMQYlYT0OYHp5suqIiemLclOhckoPAreUmuh6e8XFNBQiBj00eMZETM43')
+
 app.use(cors())
 app.use(express.json({ limit: "25mb" }))
 
 app.listen(port, () =>
   console.log(`Server running at http://localhost:${port}`)
-);
+)
 
-app.get("/", (req, res) => {
-  res.send("Hello World!")
-})
-
-app.post("/", upload.single('file'), async (req, res) => {
+app.post("/transcribe", upload.single('file'), async (req, res) => {
   const format = req.body.format
   const filePath = req.file.path
   
@@ -51,6 +51,7 @@ app.post("/", upload.single('file'), async (req, res) => {
 
   const fileStream = fs.createReadStream(filePath);
   try {
+    console.log("Transcription started")
     const result = await openai.createTranscription(
       fileStream,
       "whisper-1",
@@ -59,6 +60,7 @@ app.post("/", upload.single('file'), async (req, res) => {
       "0",
       "en"
     )
+    console.log("Transcription finished")
 
     const extension = () => {
       switch (format) {
@@ -90,4 +92,48 @@ app.post("/", upload.single('file'), async (req, res) => {
     })
   }
 
+})
+
+app.post("/create-payment-intent", upload.single('file'), async (req, res) => {
+  const { items } = req.body;
+  const filePath = req.file.path
+  
+  if (!filePath) {
+    res.status(400).send({ message: "No file uploaded" })
+    return
+  }
+
+  try {
+    const metadata = await ffprobe(filePath, { path: ffprobeStatic.path });
+    const audioStream = metadata.streams.find((stream) => stream.codec_type === "audio");
+    const pricePerSec = await stripe.prices.retrieve('price_1MrtVDJD5XPjP7WOs2qhF7wf')
+
+    if (audioStream) {
+      const duration = audioStream.duration / 60
+      const centsPerMin = await stripe.prices.retrieve('price_1MrtVDJD5XPjP7WOs2qhF7wf')
+      const pricePerMin = centsPerMin.unit_amount / 100
+      const price = (duration * pricePerMin).toFixed(2)
+  
+      const paymentIntent = await stripe.paymentIntents.create({
+        amount: price,
+        currency: "aud",
+      })
+  
+      // Create a PaymentIntent with the order amount and currency
+      res.send({
+        clientSecret: paymentIntent.client_secret
+      })
+    }
+
+  } catch (error) {
+    console.error(`Error creating payment intent: ${error}`);
+  } finally {
+    fs.unlink(filePath, (err) => {
+      if (err) {
+        console.error(err)
+        return
+      }
+      console.log(`${filePath} was deleted`)
+    })
+  }
 })
