@@ -109,18 +109,16 @@ app.post("/create-payment-intent", upload.single('file'), async (req, res) => {
     const pricePerSec = await stripe.prices.retrieve('price_1MrtVDJD5XPjP7WOs2qhF7wf')
 
     if (audioStream) {
-      const duration = audioStream.duration
+      const durationInSeconds = audioStream.duration
+      const durationInMinutes = durationInSeconds / 60 
       const stripePrice = await stripe.prices.retrieve('price_1MrtVDJD5XPjP7WOs2qhF7wf')
-      const pricePerMin = stripePrice.unit_amount
-      const price = (duration * pricePerMin).toFixed(2)
-      console.log(`
-        duration: ${duration}
-        pricePerMin: ${pricePerMin}
-        price: ${price}
-      `)
-  
+      const centsPerMin = stripePrice.unit_amount
+      const dollarsPerMin = stripePrice.unit_amount / 100
+      const priceInDollars = durationInMinutes * dollarsPerMin
+      const priceInCents = durationInMinutes * centsPerMin
+
       const paymentIntent = await stripe.paymentIntents.create({
-        amount: 50, // price in cents
+        amount: 50,
         currency: "aud",
       })
   
