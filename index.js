@@ -97,6 +97,7 @@ app.post("/transcribe", upload.single('file'), async (req, res) => {
 app.post("/create-payment-intent", upload.single('file'), async (req, res) => {
   const { items } = req.body;
   const filePath = req.file.path
+  console.log(`${filePath} was uploaded`)
   
   if (!filePath) {
     res.status(400).send({ message: "No file uploaded" })
@@ -106,7 +107,6 @@ app.post("/create-payment-intent", upload.single('file'), async (req, res) => {
   try {
     const metadata = await ffprobe(filePath, { path: ffprobeStatic.path });
     const audioStream = metadata.streams.find((stream) => stream.codec_type === "audio");
-    const pricePerSec = await stripe.prices.retrieve('price_1MrtVDJD5XPjP7WOs2qhF7wf')
 
     if (audioStream) {
       const durationInSeconds = audioStream.duration
@@ -118,7 +118,6 @@ app.post("/create-payment-intent", upload.single('file'), async (req, res) => {
       // Ensure the amount is at least 50 cents
       priceInCents = Math.max(priceInCents, 50)
 
-      console.log("price", priceInCents);
       const paymentIntent = await stripe.paymentIntents.create({
         amount: priceInCents,
         currency: "aud",
