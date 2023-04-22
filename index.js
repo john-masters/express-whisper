@@ -43,6 +43,7 @@ app.listen(port, () =>
 app.post("/transcribe", upload.single('file'), async (req, res) => {
   const format = req.body.format
   const filePath = req.file.path
+  console.log(`${filePath} was uploaded`)
   
   if (!filePath) {
     res.status(400).send({ message: "No file uploaded" })
