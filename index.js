@@ -31,8 +31,8 @@ const openai = new OpenAIApi(configuration)
 const app = express()
 const port = process.env.PORT || 8080
 
-const stripe = Stripe(process.env.STRIPE_PRIVATE_KEY) // prod key
-// const stripe = Stripe(process.env.STRIPE_TEST_KEY) // test key
+// const stripe = Stripe(process.env.STRIPE_PRIVATE_KEY) // prod key
+const stripe = Stripe(process.env.STRIPE_TEST_KEY) // test key
 
 app.use(cors())
 app.use(express.json({ limit: "25mb" }))
@@ -113,8 +113,8 @@ app.post("/create-payment-intent", upload.single('file'), async (req, res) => {
     if (audioStream) {
       const durationInSeconds = audioStream.duration
       const durationInMinutes = durationInSeconds / 60 
-      // const stripePrice = await stripe.prices.retrieve('price_1MrtVDJD5XPjP7WOs2qhF7wf') // test price
-      const stripePrice = await stripe.prices.retrieve('price_1Mzz2VJD5XPjP7WOJ0Bq4erM') // prod price
+      const stripePrice = await stripe.prices.retrieve('price_1MrtVDJD5XPjP7WOs2qhF7wf') // test price
+      // const stripePrice = await stripe.prices.retrieve('price_1Mzz2VJD5XPjP7WOJ0Bq4erM') // prod price
       const centsPerMin = stripePrice.unit_amount
       let priceInCents = Math.floor(durationInMinutes * centsPerMin)
 
