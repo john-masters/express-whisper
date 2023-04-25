@@ -8,6 +8,7 @@ import path from "path"
 import Stripe from "stripe"
 import ffprobe from "ffprobe"
 import ffprobeStatic from "ffprobe-static"
+import axios from "axios";
 
 dotenv.config()
 
@@ -19,14 +20,18 @@ const storage = multer.diskStorage({
     cb(null, './')
   },
 })
+
 const upload = multer({ storage })
 
+const customAxiosInstance = axios.create({
+  maxBodyLength: Infinity
+});
 
 const configuration = new Configuration({
   apiKey: process.env.OPENAI_API_KEY,
 })
 
-const openai = new OpenAIApi(configuration)
+const openai = new OpenAIApi(configuration, undefined, customAxiosInstance)
 
 const app = express()
 const port = process.env.PORT || 8080
