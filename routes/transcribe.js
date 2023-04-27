@@ -15,7 +15,6 @@ router.post("/", upload.single("file"), async (req, res) => {
     res.status(400).send({ message: "No file uploaded" });
     return;
   };
-  // const fileStream = fs.createReadStream(filePath);
 
   const newFilePath = await convertTo16kMP3(filePath, "converted_" + filePath + ".mp3");
   const newFileStream = fs.createReadStream(newFilePath);
@@ -28,14 +27,7 @@ router.post("/", upload.single("file"), async (req, res) => {
     }
   });
 
-  // console.log(`
-  //   fileStream: ${fileStream}
-  //   newFileStream: ${newFileStream}
-  //   newFileStreamObject: ${newFileStreamObject}
-  // `)
-
   createTranscription(newFileStream, format, newFilePath, res);
-  // createTranscription(fileStream, format, filePath, res);
 });
 
 export { router as transcribeRouter };
