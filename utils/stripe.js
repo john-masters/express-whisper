@@ -41,7 +41,7 @@ export async function createPaymentIntent(filePath, res) {
   } finally {
     fs.unlink(filePath, (err) => {
       if (err) {
-        console.error(err);
+        console.error(`Error deleting ${filePath}:`, err);
         return;
       }
       console.log(`${filePath} was deleted`);

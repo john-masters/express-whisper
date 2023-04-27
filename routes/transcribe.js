@@ -15,12 +15,27 @@ router.post("/", upload.single("file"), async (req, res) => {
     res.status(400).send({ message: "No file uploaded" });
     return;
   };
-  const fileStream = fs.createReadStream(filePath);
+  // const fileStream = fs.createReadStream(filePath);
 
-  // const newFileStream = await convertTo16kMP3(filePath, "converted_" + filePath + ".mp3");
+  const newFilePath = await convertTo16kMP3(filePath, "converted_" + filePath + ".mp3");
+  const newFileStream = fs.createReadStream(newFilePath);
 
-  // createTranscription(newFileStream, format, filePath, res);
-  createTranscription(fileStream, format, filePath, res);
+  fs.unlink(filePath, (err) => {
+    if (err) {
+      console.error(`Error deleting ${filePath}:`, err);
+    } else {
+      console.log(`${filePath} was deleted`);
+    }
+  });
+
+  // console.log(`
+  //   fileStream: ${fileStream}
+  //   newFileStream: ${newFileStream}
+  //   newFileStreamObject: ${newFileStreamObject}
+  // `)
+
+  createTranscription(newFileStream, format, newFilePath, res);
+  // createTranscription(fileStream, format, filePath, res);
 });
 
 export { router as transcribeRouter };
