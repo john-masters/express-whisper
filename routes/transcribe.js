@@ -1,10 +1,10 @@
-import express from 'express';
-import { createTranscription } from '../utils/openai.js';
-import { upload } from '../utils/multer.js';
-import { convertTo16kMP3 } from '../utils/converter.js';
+import express from "express";
+import createTranscription from "../utils/openai.js";
+import upload from "../utils/multer.js";
+import convertTo16kMP3 from "../utils/converter.js";
 import fs from "fs";
 
-const router = express.Router()
+const router = express.Router();
 
 router.post("/", upload.single("file"), async (req, res) => {
   const format = req.body.format;
@@ -14,15 +14,18 @@ router.post("/", upload.single("file"), async (req, res) => {
     format: ${format}
     language: ${language}
     filePath: ${filePath}
-    `)
+    `);
   console.log(`${filePath} was uploaded`);
-  
+
   if (!filePath) {
     res.status(400).send({ message: "No file uploaded" });
     return;
-  };
+  }
 
-  const newFilePath = await convertTo16kMP3(filePath, "converted_" + filePath + ".mp3");
+  const newFilePath = await convertTo16kMP3(
+    filePath,
+    "converted_" + filePath + ".mp3"
+  );
   const newFileStream = fs.createReadStream(newFilePath);
 
   fs.unlink(filePath, (err) => {
@@ -36,4 +39,4 @@ router.post("/", upload.single("file"), async (req, res) => {
   createTranscription(newFileStream, format, language, newFilePath, res);
 });
 
-export { router as transcribeRouter };
+export default router;

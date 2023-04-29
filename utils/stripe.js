@@ -9,7 +9,7 @@ dotenv.config();
 // const stripe = Stripe(process.env.STRIPE_PRIVATE_KEY) // prod key
 const stripe = Stripe(process.env.STRIPE_TEST_KEY) // test key
 
-export async function createPaymentIntent(filePath, res) {
+export default async function createPaymentIntent(filePath, res) {
   try {
     const metadata = await ffprobe(filePath, { path: ffprobeStatic.path });
     const audioStream = metadata.streams.find((stream) => stream.codec_type === "audio");

@@ -14,11 +14,11 @@ const configuration = new Configuration({
   apiKey: process.env.OPENAI_API_KEY,
 });
 
-export const openai = new OpenAIApi(
+const openai = new OpenAIApi(
   configuration, undefined, customAxiosInstance
 );
 
-export async function createTranscription(fileStream, format, language, filePath, res) {
+export default async function createTranscription(fileStream, format, language, filePath, res) {
   try {
     console.log("Transcription started")
     const result = await openai.createTranscription(

@@ -1,6 +1,6 @@
 import ffmpeg from 'fluent-ffmpeg';
 
-export const convertTo16kMP3 = async (inputPath, outputPath) => {
+export default async function convertTo16kMP3(inputPath, outputPath) {
   return new Promise((resolve, reject) => {
     ffmpeg(inputPath)
       .audioFrequency(16000)
