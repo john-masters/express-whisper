@@ -18,7 +18,7 @@ export const openai = new OpenAIApi(
   configuration, undefined, customAxiosInstance
 );
 
-export async function createTranscription(fileStream, format, filePath, res) {
+export async function createTranscription(fileStream, format, language, filePath, res) {
   try {
     console.log("Transcription started")
     const result = await openai.createTranscription(
@@ -27,7 +27,7 @@ export async function createTranscription(fileStream, format, filePath, res) {
       "",
       format,
       "0",
-      "en"
+      language
     );
     console.log("Transcription finished")
     const extension = () => {
