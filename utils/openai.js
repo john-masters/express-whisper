@@ -14,11 +14,11 @@ const configuration = new Configuration({
   apiKey: process.env.OPENAI_API_KEY,
 });
 
-export const openai = new OpenAIApi(
+const openai = new OpenAIApi(
   configuration, undefined, customAxiosInstance
 );
 
-export async function createTranscription(fileStream, format, filePath, res) {
+export default async function createTranscription(fileStream, format, language, filePath, res) {
   try {
     console.log("Transcription started")
     const result = await openai.createTranscription(
@@ -27,7 +27,7 @@ export async function createTranscription(fileStream, format, filePath, res) {
       "",
       format,
       "0",
-      "en"
+      language
     );
     console.log("Transcription finished")
     const extension = () => {
@@ -53,7 +53,7 @@ export async function createTranscription(fileStream, format, filePath, res) {
   } finally {
     fs.unlink(filePath, (err) => {
       if (err) {
-        console.error(err)
+        console.error(`Error deleting ${filePath}:`, err);
         return;
       }
       console.log(`${filePath} was deleted`);
