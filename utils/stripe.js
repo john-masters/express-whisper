@@ -6,8 +6,8 @@ import fs from "fs";
 
 dotenv.config();
 
-const stripe = Stripe(process.env.STRIPE_TEST_KEY) // test key
-// const stripe = Stripe(process.env.STRIPE_PRIVATE_KEY) // prod key
+// const stripe = Stripe(process.env.STRIPE_TEST_KEY) // test key
+const stripe = Stripe(process.env.STRIPE_PRIVATE_KEY) // prod key
 
 export default async function createPaymentIntent(filePath, res) {
   try {
@@ -18,8 +18,8 @@ export default async function createPaymentIntent(filePath, res) {
       const durationInSeconds = audioStream.duration;
       const durationInMinutes = durationInSeconds / 60;
 
-      const stripePrice = await stripe.prices.retrieve('price_1MrtVDJD5XPjP7WOs2qhF7wf'); // test price
-      // const stripePrice = await stripe.prices.retrieve('price_1Mzz2VJD5XPjP7WOJ0Bq4erM'); // prod price
+      // const stripePrice = await stripe.prices.retrieve('price_1MrtVDJD5XPjP7WOs2qhF7wf'); // test price
+      const stripePrice = await stripe.prices.retrieve('price_1Mzz2VJD5XPjP7WOJ0Bq4erM'); // prod price
 
       const centsPerMin = stripePrice.unit_amount;
       let priceInCents = Math.floor(durationInMinutes * centsPerMin);
