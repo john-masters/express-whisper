@@ -15,7 +15,7 @@ export default async function compressFile(inputPath, outputPath) {
         reject(err);
       })
       .on('end', () => {
-        console.log('Conversion to 16k .m4a completed');
+        console.log('Conversion to 16k .mp3 completed');
         resolve(outputPath);
       })
       .save(outputPath);
