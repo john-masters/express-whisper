@@ -19,8 +19,9 @@ router.post("/", upload.single("file"), async (req, res) => {
 
   const newFilePath = await compressFile(
     filePath,
-    "compressed_" + filePath
+    "compressed_" + filePath + ".mp3"
   );
+
   const newFileStream = fs.createReadStream(newFilePath);
 
   fs.unlink(filePath, (err) => {
