@@ -1,12 +1,8 @@
 [phases.setup]
 nixPkgs = ["...", "ffmpeg"] # Install the ffmpeg package from Nix
 
-[build]
-builder = "nixpacks"
-buildCommand = "echo building!"
-
 [deploy]
-startCommand = "echo starting!"
+startCommand = "npm run start"
 healthcheckPath = "/"
 healthcheckTimeout = 100
 restartPolicyType = "never"
