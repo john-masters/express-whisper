@@ -1,6 +1,0 @@
-[phases.setup]
-nixPkgs = ["...", "ffmpeg"] # Install the ffmpeg package from Nix
-
-[deploy]
-startCommand = "npm run start"
-restartPolicyType = "never"
