@@ -7,9 +7,15 @@ import fs from "fs";
 const router = express.Router();
 
 router.post("/", upload.single("file"), async (req, res) => {
-  const format = req.body.format;
-  const language = req.body.language;
   const filePath = req.file.path;
+  let mode, format, language;
+
+  if (req.body.mode === "transcribe") {
+    ({ mode, format, language } = req.body);
+  } else {
+    ({ mode, format } = req.body);
+  }
+
   console.log(`${filePath} was uploaded`);
 
   if (!filePath) {
@@ -32,7 +38,7 @@ router.post("/", upload.single("file"), async (req, res) => {
     }
   });
 
-  createTranscription(newFileStream, format, language, newFilePath, res);
+  createTranscription(newFileStream, format, mode, newFilePath, res, language);
 });
 
 export default router;
