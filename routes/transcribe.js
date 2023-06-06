@@ -1,5 +1,6 @@
 import express from "express";
 import createTranscription from "../utils/openai.js";
+import silenceDetector from "../utils/silence.js";
 import upload from "../utils/multer.js";
 import fs from "fs";
 
@@ -24,7 +25,12 @@ router.post("/", upload.single("file"), async (req, res) => {
 
   const fileStream = fs.createReadStream(filePath);
 
-  createTranscription(fileStream, format, mode, filePath, res, language);
+  console.log("before");
+  const segments = await silenceDetector(filePath);
+  console.log("segments", segments);
+  console.log("after");
+
+  // createTranscription(fileStream, format, mode, filePath, res, language);
 });
 
 export default router;
