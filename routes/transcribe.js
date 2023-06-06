@@ -1,7 +1,6 @@
 import express from "express";
 import createTranscription from "../utils/openai.js";
 import upload from "../utils/multer.js";
-import compressFile from "../utils/compresser.js";
 import fs from "fs";
 
 const router = express.Router();
@@ -23,22 +22,9 @@ router.post("/", upload.single("file"), async (req, res) => {
     return;
   }
 
-  const newFilePath = await compressFile(
-    filePath,
-    "compressed_" + filePath + ".mp3"
-  );
+  const fileStream = fs.createReadStream(filePath);
 
-  const newFileStream = fs.createReadStream(newFilePath);
-
-  fs.unlink(filePath, (err) => {
-    if (err) {
-      console.error(`Error deleting ${filePath}:`, err);
-    } else {
-      console.log(`${filePath} was deleted`);
-    }
-  });
-
-  createTranscription(newFileStream, format, mode, newFilePath, res, language);
+  createTranscription(fileStream, format, mode, filePath, res, language);
 });
 
 export default router;
