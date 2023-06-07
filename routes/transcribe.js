@@ -30,7 +30,11 @@ router.post("/", upload.single("file"), async (req, res) => {
   if (duration < 1800) {
     createTranscription(fileStream, format, mode, filePath, res, language);
   } else {
-    const segments = await silenceDetector(filePath);
+    try {
+      const segments = await silenceDetector(filePath);
+    } catch (err) {
+      console.log(err);
+    }
     console.log("segments", segments);
   }
 });
