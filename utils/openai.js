@@ -89,51 +89,49 @@ export async function createMultiTranscription(
   res,
   language = null
 ) {
-  let responses = [];
-  segmentPaths.forEach(async (filePath, index) => {
-    try {
-      console.log(`Transcription for ${filePath} started`);
-
-      const fileStream = fs.createReadStream(filePath);
-
-      let result;
-      if (mode === "transcribe") {
-        result = await openai.createTranscription(
-          fileStream,
-          "whisper-1",
-          "",
-          format,
-          "0",
-          language
-        );
-      } else {
-        result = await openai.createTranslation(
-          fileStream,
-          "whisper-1",
-          "",
-          format,
-          "0"
-        );
-      }
-      const { data } = result;
-      console.log("data: ", data);
-      console.log(`Transcription for ${filePath} finished`);
-      responses.push({ index, data });
-      console.log("responses: ", responses);
-    } catch (err) {
-      console.log("error: ", err);
-    } finally {
-      fs.unlink(filePath, (err) => {
-        if (err) {
-          console.error(`Error deleting ${filePath}:`, err);
-          return;
-        }
-        console.log(`${filePath} was deleted`);
-      });
-    }
-  });
-
   try {
+    const responses = await Promise.all(
+      segmentPaths.map(async (segmentPath, index) => {
+        try {
+          console.log(`Transcription for ${segmentPath} started`);
+
+          const fileStream = fs.createReadStream(segmentPath);
+
+          let result;
+          if (mode === "transcribe") {
+            result = await openai.createTranscription(
+              fileStream,
+              "whisper-1",
+              "",
+              format,
+              "0",
+              language
+            );
+          } else {
+            result = await openai.createTranslation(
+              fileStream,
+              "whisper-1",
+              "",
+              format,
+              "0"
+            );
+          }
+          console.log(`Transcription for ${segmentPath} finished`);
+          return result.data;
+        } catch (err) {
+          console.log("error: ", err);
+        } finally {
+          fs.unlink(segmentPath, (err) => {
+            if (err) {
+              console.error(`Error deleting ${segmentPath}:`, err);
+              return;
+            }
+            console.log(`${segmentPath} was deleted`);
+          });
+        }
+      })
+    );
+
     const extension = () => {
       switch (format) {
         case "text":
@@ -145,12 +143,10 @@ export async function createMultiTranscription(
       }
     };
 
-    console.log("responses: ", responses);
-    const concatResponses = responses.join("");
-    console.log("concatenated responses: ", concatResponses);
-
     const fileName =
       path.basename(filePath, path.extname(filePath)) + extension();
+
+    const concatResponses = responses.join("");
 
     res.set({
       "Content-Type": "Application/octet-stream",
