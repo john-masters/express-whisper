@@ -4,11 +4,13 @@ import createTranscription from "../utils/openai.js";
 import silenceDetector from "../utils/silence.js";
 import upload from "../utils/multer.js";
 import fs from "fs";
+import audioSplitter from "../utils/split.js";
 
 const router = express.Router();
 
 router.post("/", upload.single("file"), async (req, res) => {
   const filePath = req.file.path;
+  console.log(filePath);
   let mode, format, language;
 
   if (req.body.mode === "transcribe") {
@@ -32,10 +34,18 @@ router.post("/", upload.single("file"), async (req, res) => {
   } else {
     try {
       const segments = await silenceDetector(filePath);
+      audioSplitter(filePath, segments);
     } catch (err) {
       console.log(err);
+    } finally {
+      fs.unlink(filePath, (err) => {
+        if (err) {
+          console.error(`Error deleting ${filePath}:`, err);
+          return;
+        }
+        console.log(`${filePath} was deleted`);
+      });
     }
-    console.log("segments", segments);
   }
 });
 

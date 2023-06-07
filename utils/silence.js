@@ -1,6 +1,4 @@
 import ffmpeg from "fluent-ffmpeg";
-import path from "path";
-import fs from "fs";
 
 const silenceVolume = -30; // in decibels
 const silenceDuration = 2.0; // in seconds
