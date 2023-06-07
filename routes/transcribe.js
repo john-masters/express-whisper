@@ -34,17 +34,17 @@ router.post("/", upload.single("file"), async (req, res) => {
   } else {
     try {
       const segments = await silenceDetector(filePath);
-      audioSplitter(filePath, segments);
+      await audioSplitter(filePath, segments);
+
+      // fs.unlink(filePath, (err) => {
+      //   if (err) {
+      //     console.error(`Error deleting ${filePath}:`, err);
+      //     return;
+      //   }
+      //   console.log(`${filePath} was deleted`);
+      // });
     } catch (err) {
       console.log(err);
-    } finally {
-      fs.unlink(filePath, (err) => {
-        if (err) {
-          console.error(`Error deleting ${filePath}:`, err);
-          return;
-        }
-        console.log(`${filePath} was deleted`);
-      });
     }
   }
 });
