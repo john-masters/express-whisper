@@ -1,4 +1,5 @@
 import express from "express";
+import getDuration from "../utils/duration.js";
 import createTranscription from "../utils/openai.js";
 import silenceDetector from "../utils/silence.js";
 import upload from "../utils/multer.js";
@@ -24,13 +25,14 @@ router.post("/", upload.single("file"), async (req, res) => {
   }
 
   const fileStream = fs.createReadStream(filePath);
+  const duration = await getDuration(filePath);
 
-  console.log("before");
-  const segments = await silenceDetector(filePath);
-  console.log("segments", segments);
-  console.log("after");
-
-  // createTranscription(fileStream, format, mode, filePath, res, language);
+  if (duration < 1800) {
+    createTranscription(fileStream, format, mode, filePath, res, language);
+  } else {
+    const segments = await silenceDetector(filePath);
+    console.log("segments", segments);
+  }
 });
 
 export default router;
