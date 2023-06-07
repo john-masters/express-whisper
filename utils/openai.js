@@ -82,15 +82,19 @@ export async function createTranscription(
 
 // TODO: complete this function
 export async function createMultiTranscription(
+  filePath,
   segmentPaths,
   format,
   mode,
   res,
   language = null
 ) {
-  segmentPaths.forEach(async (filePath) => {
+  let responses = [];
+  segmentPaths.forEach(async (filePath, index) => {
     try {
       console.log(`Transcription for ${filePath} started`);
+
+      const fileStream = fs.createReadStream(filePath);
 
       let result;
       if (mode === "transcribe") {
@@ -111,7 +115,11 @@ export async function createMultiTranscription(
           "0"
         );
       }
+      const { data } = result;
+      console.log("data: ", data);
       console.log(`Transcription for ${filePath} finished`);
+      responses.push({ index, data });
+      console.log("responses: ", responses);
     } catch (err) {
       console.log("error: ", err);
     } finally {
@@ -137,6 +145,10 @@ export async function createMultiTranscription(
       }
     };
 
+    console.log("responses: ", responses);
+    const concatResponses = responses.join("");
+    console.log("concatenated responses: ", concatResponses);
+
     const fileName =
       path.basename(filePath, path.extname(filePath)) + extension();
 
@@ -144,7 +156,7 @@ export async function createMultiTranscription(
       "Content-Type": "Application/octet-stream",
       "Content-Disposition": `attachment; filename=${fileName}`,
     });
-    res.send(Buffer.from(result.data));
+    res.send(Buffer.from(concatResponses));
   } catch (err) {
     console.log("error: ", err);
   } finally {

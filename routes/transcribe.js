@@ -41,17 +41,15 @@ router.post("/", upload.single("file"), async (req, res) => {
       // split audio into segments based on silence timestamps
       const segmentPaths = await audioSplitter(filePath, segments);
 
-      // delete original file
-      fs.unlink(filePath, (err) => {
-        if (err) {
-          console.error(`Error deleting ${filePath}:`, err);
-          return;
-        }
-        console.log(`${filePath} was deleted`);
-      });
-
       // for loop through segmentPaths and create transcription for each
-      createMultiTranscription(segmentPaths, format, mode, res, language);
+      createMultiTranscription(
+        filePath,
+        segmentPaths,
+        format,
+        mode,
+        res,
+        language
+      );
     } catch (err) {
       console.log(err);
     }
