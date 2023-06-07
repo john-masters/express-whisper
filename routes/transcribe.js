@@ -1,6 +1,9 @@
 import express from "express";
 import getDuration from "../utils/duration.js";
-import createTranscription from "../utils/openai.js";
+import {
+  createMultiTranscription,
+  createTranscription,
+} from "../utils/openai.js";
 import silenceDetector from "../utils/silence.js";
 import upload from "../utils/multer.js";
 import fs from "fs";
@@ -26,23 +29,29 @@ router.post("/", upload.single("file"), async (req, res) => {
     return;
   }
 
-  const fileStream = fs.createReadStream(filePath);
   const duration = await getDuration(filePath);
 
   if (duration < 1800) {
-    createTranscription(fileStream, format, mode, filePath, res, language);
+    createTranscription(filePath, format, mode, res, language);
   } else {
     try {
+      // get array of timestamps where silence occurs around every 30 minutes
       const segments = await silenceDetector(filePath);
-      await audioSplitter(filePath, segments);
 
-      // fs.unlink(filePath, (err) => {
-      //   if (err) {
-      //     console.error(`Error deleting ${filePath}:`, err);
-      //     return;
-      //   }
-      //   console.log(`${filePath} was deleted`);
-      // });
+      // split audio into segments based on silence timestamps
+      const segmentPaths = await audioSplitter(filePath, segments);
+
+      // delete original file
+      fs.unlink(filePath, (err) => {
+        if (err) {
+          console.error(`Error deleting ${filePath}:`, err);
+          return;
+        }
+        console.log(`${filePath} was deleted`);
+      });
+
+      // for loop through segmentPaths and create transcription for each
+      createMultiTranscription(segmentPaths, format, mode, res, language);
     } catch (err) {
       console.log(err);
     }

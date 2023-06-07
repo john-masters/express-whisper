@@ -5,57 +5,70 @@ import fs from "fs";
 export default function audioSplitter(filePath, segments) {
   console.log("audioSplitter called");
 
-  let start = 0;
   const baseFileName = path.basename(filePath, path.extname(filePath));
   const directoryPath = path.dirname(filePath);
 
-  segments.forEach((segment, index) => {
-    const cutStart = start;
+  const promises = segments.map((segment, index) => {
+    const cutStart = index > 0 ? segments[index - 1] : 0;
     const cutEnd = segment;
     const outputFileName = `${baseFileName}-${index}.mp3`;
     const outputPath = path.join(directoryPath, outputFileName);
 
+    return new Promise((resolve, reject) => {
+      ffmpeg(filePath)
+        .noVideo()
+        .audioFrequency(16000)
+        .audioBitrate(48)
+        .audioChannels(1)
+        .audioCodec("libmp3lame")
+        .format("mp3")
+        .setStartTime(cutStart)
+        .setDuration(cutEnd - cutStart)
+        .output(outputPath)
+        .on("start", () => {
+          console.log(`Starting to split segment ${index + 1}`);
+        })
+        .on("end", () => {
+          console.log(`Finished splitting segment ${index + 1}`);
+          resolve(outputPath);
+        })
+        .on("error", (err) => {
+          console.log(
+            `Error occurred while splitting segment ${index + 1}: ${
+              err.message
+            }`
+          );
+          reject(err);
+        })
+        .run();
+    });
+  });
+
+  const lastSegmentPath = path.join(
+    directoryPath,
+    `${baseFileName}-${segments.length}.mp3`
+  );
+
+  const lastSegmentPromise = new Promise((resolve, reject) => {
     ffmpeg(filePath)
-      .noVideo()
-      .audioFrequency(16000)
-      .audioBitrate(48)
-      .audioChannels(1)
-      .audioCodec("libmp3lame")
-      .format("mp3")
-      .setStartTime(cutStart)
-      .setDuration(cutEnd - cutStart)
-      .output(outputPath)
+      .setStartTime(segments[segments.length - 1])
+      .output(lastSegmentPath)
       .on("start", () => {
-        console.log(`Starting to split segment ${index + 1}`);
+        console.log(`Starting to split the last segment`);
       })
       .on("end", () => {
-        console.log(`Finished splitting segment ${index + 1}`);
+        console.log(`Finished splitting the last segment`);
+        resolve(lastSegmentPath);
       })
       .on("error", (err) => {
         console.log(
-          `Error occurred while splitting segment ${index + 1}: ${err.message}`
+          `Error occurred while splitting the last segment: ${err.message}`
         );
+        reject(err);
       })
       .run();
-    start = cutEnd;
   });
 
-  const outputFileName = `${baseFileName}-${segments.length + 1}.mp3`;
-  const outputPath = path.join(directoryPath, outputFileName);
-
-  ffmpeg(filePath)
-    .setStartTime(start)
-    .output(outputPath)
-    .on("start", () => {
-      console.log(`Starting to split the last segment`);
-    })
-    .on("end", () => {
-      console.log(`Finished splitting the last segment`);
-    })
-    .on("error", (err) => {
-      console.log(
-        `Error occurred while splitting the last segment: ${err.message}`
-      );
-    })
-    .run();
+  promises.push(lastSegmentPromise);
+  return Promise.all(promises);
 }
