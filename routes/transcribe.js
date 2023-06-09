@@ -40,16 +40,19 @@ router.post("/", upload.single("file"), async (req, res) => {
 
       // split audio into segments based on silence timestamps
       const segmentPaths = await audioSplitter(filePath, segments);
+      console.log("segmentPaths: ", segmentPaths);
 
-      // for loop through segmentPaths and create transcription for each
-      createMultiTranscription(
-        filePath,
-        segmentPaths,
-        format,
-        mode,
-        res,
-        language
-      );
+      // SOMEHOW SENDING LARGE FILE? PLEASES FIX
+
+      // // for loop through segmentPaths and create transcription for each
+      // createMultiTranscription(
+      //   filePath,
+      //   segmentPaths,
+      //   format,
+      //   mode,
+      //   res,
+      //   language
+      // );
     } catch (err) {
       console.log(err);
     }

@@ -3,6 +3,7 @@ import axios from "axios";
 import dotenv from "dotenv";
 import fs from "fs";
 import path from "path";
+import mergeSRT from "./mergeSRT.js";
 
 dotenv.config();
 
@@ -116,7 +117,7 @@ export async function createMultiTranscription(
             );
           }
           console.log(`Transcription for ${segmentPath} finished`);
-          return result.data.trimEnd();
+          return result.data;
         } catch (err) {
           console.log("error: ", err);
         } finally {
@@ -131,21 +132,31 @@ export async function createMultiTranscription(
       })
     );
 
-    const extension = () => {
-      switch (format) {
-        case "text":
-          return ".txt";
-        case "srt":
-          return ".srt";
-        case "vtt":
-          return ".vtt";
-      }
-    };
+    let extension;
+    let concatResponses;
+
+    switch (format) {
+      case "text":
+        reponses;
+        const cleanResponses = responses.map((response) => response.trimEnd());
+        concatResponses = cleanResponses.join(" ");
+        extension = ".txt";
+        break;
+
+      case "srt":
+        // handle srt files
+        concatResponses = mergeSRT(responses);
+        extension = ".srt";
+        break;
+
+      case "vtt":
+        // handle vtt files
+        extension = ".vtt";
+        break;
+    }
 
     const fileName =
-      path.basename(filePath, path.extname(filePath)) + extension();
-
-    const concatResponses = responses.join("");
+      path.basename(filePath, path.extname(filePath)) + extension;
 
     res.set({
       "Content-Type": "Application/octet-stream",
