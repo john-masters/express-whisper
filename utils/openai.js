@@ -137,7 +137,6 @@ export async function createMultiTranscription(
 
     switch (format) {
       case "text":
-        reponses;
         const cleanResponses = responses.map((response) => response.trimEnd());
         concatResponses = cleanResponses.join(" ");
         extension = ".txt";
@@ -145,7 +144,7 @@ export async function createMultiTranscription(
 
       case "srt":
         // handle srt files
-        concatResponses = mergeSRT(responses);
+        concatResponses = await mergeSRT(responses);
         extension = ".srt";
         break;
 

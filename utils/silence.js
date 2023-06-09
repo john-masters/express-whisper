@@ -1,7 +1,7 @@
 import ffmpeg from "fluent-ffmpeg";
 
 const silenceVolume = -30; // in decibels
-const silenceDuration = 2.0; // in seconds
+const silenceDuration = 4.0; // in seconds
 
 // 1800 seconds = 30 minutes
 let splitTimes = [
