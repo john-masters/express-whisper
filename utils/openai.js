@@ -80,7 +80,6 @@ export async function createTranscription(
   }
 }
 
-// TODO: complete this function
 export async function createMultiTranscription(
   filePath,
   segmentPaths,
@@ -117,7 +116,7 @@ export async function createMultiTranscription(
             );
           }
           console.log(`Transcription for ${segmentPath} finished`);
-          return result.data;
+          return result.data.trimEnd();
         } catch (err) {
           console.log("error: ", err);
         } finally {
