@@ -17,6 +17,7 @@ export default async function mergeSRT(responses) {
       // Separate the entry into lines
       const lines = entry.split("\n");
 
+      // TODO: Is this necessary?
       // Ignore entries with less than 3 lines (they're likely not real entries)
       if (lines.length < 3) return;
 
