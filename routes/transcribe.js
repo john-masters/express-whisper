@@ -6,7 +6,6 @@ import {
 } from "../utils/openai.js";
 import silenceDetector from "../utils/silence.js";
 import upload from "../utils/multer.js";
-import fs from "fs";
 import audioSplitter from "../utils/split.js";
 
 const router = express.Router();
@@ -42,17 +41,15 @@ router.post("/", upload.single("file"), async (req, res) => {
       const segmentPaths = await audioSplitter(filePath, segments);
       console.log("segmentPaths: ", segmentPaths);
 
-      // SOMEHOW SENDING LARGE FILE? PLEASES FIX
-
       // // for loop through segmentPaths and create transcription for each
-      // createMultiTranscription(
-      //   filePath,
-      //   segmentPaths,
-      //   format,
-      //   mode,
-      //   res,
-      //   language
-      // );
+      createMultiTranscription(
+        filePath,
+        segmentPaths,
+        format,
+        mode,
+        res,
+        language
+      );
     } catch (err) {
       console.log(err);
     }

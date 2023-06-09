@@ -51,6 +51,12 @@ export default function audioSplitter(filePath, segments) {
 
   const lastSegmentPromise = new Promise((resolve, reject) => {
     ffmpeg(filePath)
+      .noVideo()
+      .audioFrequency(16000)
+      .audioBitrate(48)
+      .audioChannels(1)
+      .audioCodec("libmp3lame")
+      .format("mp3")
       .setStartTime(segments[segments.length - 1])
       .output(lastSegmentPath)
       .on("start", () => {
