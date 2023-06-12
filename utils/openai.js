@@ -4,6 +4,7 @@ import dotenv from "dotenv";
 import fs from "fs";
 import path from "path";
 import mergeSRT from "./mergeSRT.js";
+import mergeVTT from "./mergeVTT.js";
 
 dotenv.config();
 
@@ -143,13 +144,12 @@ export async function createMultiTranscription(
         break;
 
       case "srt":
-        // handle srt files
         concatResponses = await mergeSRT(responses);
         extension = ".srt";
         break;
 
       case "vtt":
-        // handle vtt files
+        concatResponses = await mergeVTT(responses);
         extension = ".vtt";
         break;
     }
