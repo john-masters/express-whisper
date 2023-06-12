@@ -34,10 +34,8 @@ export default async function mergeVTT(responses) {
         end: index === 0 ? endMs : endMs + timeShift,
         text: text,
       };
-      console.log("newObj", newObj);
       vttObjects.push(newObj);
     });
-    return vttObjects;
   }
 
   let vttFile = "WEBVTT\n\n";
