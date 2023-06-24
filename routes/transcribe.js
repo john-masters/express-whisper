@@ -11,6 +11,8 @@ import audioSplitter from "../utils/split.js";
 const router = express.Router();
 
 router.post("/", upload.single("file"), async (req, res) => {
+  console.log("req", req);
+  console.log("res", res);
   const filePath = req.file.path;
   console.log(filePath);
   let mode, format, language;
