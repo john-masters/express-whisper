@@ -12,7 +12,6 @@ const router = express.Router();
 
 router.post("/", upload.single("file"), async (req, res) => {
   const filePath = req.file.path;
-  console.log(filePath);
   let mode, format, language;
 
   if (req.body.mode === "transcribe") {
