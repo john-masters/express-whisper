@@ -88,11 +88,9 @@ router.post("/", upload.single("file"), async (req, res) => {
 
     const { ip, ts, colo, loc } = await JSON.parse(userData);
     const newDate = unixTimeConvert(ts);
-    console.log("newDate: ", newDate);
     sheetData.unshift(ip, newDate, colo, loc);
 
     const update = await updateSheet([sheetData], 2);
-    console.log("update: ", update);
   } catch (err) {
     console.log(err);
   }

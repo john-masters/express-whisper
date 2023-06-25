@@ -10,7 +10,6 @@ const router = express.Router();
 router.post("/", async (req, res) => {
   const { ip, ts, colo, loc } = req.body;
   const newDate = unixTimeConvert(ts);
-  console.log("newDate: ", newDate);
 
   const response = await updateSheet([[ip, newDate, colo, loc]], 1);
 
