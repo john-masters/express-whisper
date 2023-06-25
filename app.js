@@ -8,6 +8,7 @@ import trackingRouter from "./routes/tracking.js";
 const app = express();
 
 app.use(cors());
+app.options("/tracking", cors()); // enable pre-flight requests for tracking route
 app.use(express.json({ limit: "25mb" }));
 
 app.use("/transcribe", transcribeRouter);
