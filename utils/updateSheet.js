@@ -1,19 +1,14 @@
-import express from "express";
 import dotenv from "dotenv";
 
 import { google } from "googleapis";
-import { readFileSync } from "fs";
 
 dotenv.config();
 
 export default async function updateSheet([values], sheetId) {
-  const serviceAccount = JSON.parse(
-    readFileSync("service_account.json", "utf8")
-  );
-
   const jwt = new google.auth.JWT({
-    email: serviceAccount.client_email,
-    key: serviceAccount.private_key,
+    email: process.env.SERVICE_ACCOUNT_EMAIL,
+    // replace function is used to replace the escaped newline characters with actual newline characters
+    key: process.env.SERVICE_ACCOUNT_KEY.replace(/\\n/g, "\n"),
     scopes: ["https://www.googleapis.com/auth/spreadsheets"],
   });
 

@@ -14,7 +14,7 @@ router.post("/", async (req, res) => {
 
   const response = await updateSheet(
     [[ip, newDate, colo, loc]],
-    process.env.GOOGLE_VISITORS_SHEET_ID
+    process.env.GOOGLE_SHEET_ID
   );
 
   res.send(response);
