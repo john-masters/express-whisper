@@ -50,25 +50,7 @@ export async function createTranscription(
     }
 
     console.log("Transcription finished");
-    const extension = () => {
-      switch (format) {
-        case "text":
-          return ".txt";
-        case "srt":
-          return ".srt";
-        case "vtt":
-          return ".vtt";
-      }
-    };
-
-    const fileName =
-      path.basename(filePath, path.extname(filePath)) + extension();
-
-    res.set({
-      "Content-Type": "Application/octet-stream",
-      "Content-Disposition": `attachment; filename=${fileName}`,
-    });
-    res.send(Buffer.from(result.data));
+    return result.data;
   } catch (err) {
     console.log("error: ", err);
   } finally {
@@ -133,35 +115,24 @@ export async function createMultiTranscription(
       })
     );
 
-    let extension;
     let concatResponses;
 
     switch (format) {
       case "text":
         const cleanResponses = responses.map((response) => response.trimEnd());
         concatResponses = cleanResponses.join(" ");
-        extension = ".txt";
         break;
 
       case "srt":
         concatResponses = await mergeSRT(responses);
-        extension = ".srt";
         break;
 
       case "vtt":
         concatResponses = await mergeVTT(responses);
-        extension = ".vtt";
         break;
     }
 
-    const fileName =
-      path.basename(filePath, path.extname(filePath)) + extension;
-
-    res.set({
-      "Content-Type": "Application/octet-stream",
-      "Content-Disposition": `attachment; filename=${fileName}`,
-    });
-    res.send(Buffer.from(concatResponses));
+    return concatResponses;
   } catch (err) {
     console.log("error: ", err);
   } finally {
