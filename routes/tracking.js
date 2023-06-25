@@ -1,6 +1,7 @@
 import express from "express";
 import dotenv from "dotenv";
 import updateSheet from "../utils/updateSheet.js";
+import unixTimeConvert from "../utils/unixTimeConvert.js";
 
 dotenv.config();
 
@@ -8,14 +9,10 @@ const router = express.Router();
 
 router.post("/", async (req, res) => {
   const { ip, ts, colo, loc } = req.body;
-  const date = new Date(ts * 1000); // convert seconds to milliseconds
-  const options = { timeZone: "Australia/Melbourne", hour12: true };
-  const newDate = date.toLocaleString("en-AU", options);
+  const newDate = unixTimeConvert(ts);
+  console.log("newDate: ", newDate);
 
-  const response = await updateSheet(
-    [[ip, newDate, colo, loc]],
-    process.env.GOOGLE_SHEET_ID
-  );
+  const response = await updateSheet([[ip, newDate, colo, loc]], 1);
 
   res.send(response);
 });

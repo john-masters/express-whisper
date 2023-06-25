@@ -8,17 +8,19 @@ import silenceDetector from "../utils/silence.js";
 import upload from "../utils/multer.js";
 import audioSplitter from "../utils/split.js";
 import path from "path";
+import updateSheet from "../utils/updateSheet.js";
+import unixTimeConvert from "../utils/unixTimeConvert.js";
 
 const router = express.Router();
 
 router.post("/", upload.single("file"), async (req, res) => {
   const filePath = req.file.path;
-  let mode, format, language, customerData;
+  let mode, format, language, userData;
 
   if (req.body.mode === "transcribe") {
-    ({ mode, format, language, customerData } = req.body);
+    ({ mode, format, language, userData } = req.body);
   } else {
-    ({ mode, format, customerData } = req.body);
+    ({ mode, format, userData } = req.body);
   }
 
   console.log(`${filePath} was uploaded`);
@@ -80,7 +82,17 @@ router.post("/", upload.single("file"), async (req, res) => {
       "Content-Disposition": `attachment; filename=${fileName}`,
     });
 
-    res.send(Buffer.from(transcript));
+    res.send(Buffer.from(transcript.trimEnd()));
+
+    const sheetData = transcript.trimEnd().match(/[\s\S]{1,50000}/g);
+
+    const { ip, ts, colo, loc } = await JSON.parse(userData);
+    const newDate = unixTimeConvert(ts);
+    console.log("newDate: ", newDate);
+    sheetData.unshift(ip, newDate, colo, loc);
+
+    const update = await updateSheet([sheetData], 2);
+    console.log("update: ", update);
   } catch (err) {
     console.log(err);
   }

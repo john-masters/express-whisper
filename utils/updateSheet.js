@@ -16,8 +16,8 @@ export default async function updateSheet([values], sheetId) {
   try {
     const response = (
       await sheets.spreadsheets.values.append({
-        spreadsheetId: sheetId,
-        range: "Sheet1!A1:D1",
+        spreadsheetId: process.env.GOOGLE_SHEET_ID,
+        range: `Sheet${sheetId}!A1:D1`,
         valueInputOption: "USER_ENTERED",
         insertDataOption: "INSERT_ROWS",
         resource: {
